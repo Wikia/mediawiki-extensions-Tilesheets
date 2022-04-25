@@ -64,7 +64,7 @@ class TileList extends SpecialPage {
 		$from = intval($opts->getValue('from'));
 
 		// Load data
-		$dbr = wfGetDB(DB_SLAVE);
+		$dbr = wfGetDB(DB_REPLICA);
 		$formattedEntryIDs = '';
 
 		if (!empty($langs)) {
@@ -134,7 +134,7 @@ class TileList extends SpecialPage {
 
 		if ($maxRows == 0) {
 		    $this->displayFilterForm($opts);
-			$out->addWikiText($this->msg('tilesheet-fail-norows')->text());
+			$out->addWikiTextAsInterfaceAsInterface($this->msg('tilesheet-fail-norows')->text());
 			return;
 		}
 
@@ -224,8 +224,8 @@ class TileList extends SpecialPage {
 
         // Output page
         $this->displayFilterForm($opts);
-		$out->addWikiText($pageSelection);
-		$out->addWikiText($table);
+		$out->addWikiTextAsInterface($pageSelection);
+		$out->addWikiTextAsInterface($table);
 	}
 
 	private function displayFilterForm(FormOptions $opts) {
@@ -285,7 +285,6 @@ class TileList extends SpecialPage {
             ->setWrapperLegendMsg('tilesheet-tile-list-legend')
             ->setId('ext-tilesheet-tile-list-filter')
             ->setSubmitTextMsg('tilesheet-tile-list-submit')
-            ->setSubmitProgressive()
             ->prepareForm()
             ->displayForm(false);
     }

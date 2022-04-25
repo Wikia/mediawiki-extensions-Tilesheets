@@ -178,7 +178,7 @@ class TileTranslator extends SpecialPage {
     }
 
     private function displayUpdateForm($id, $language) {
-        $dbr = wfGetDB(DB_SLAVE);
+        $dbr = wfGetDB(DB_REPLICA);
         $result = $dbr->select('ext_tilesheet_languages', '*', array('entry_id' => $id, 'lang' => $language));
         // If there is no translation, fallback to either the english translation or the default item name.
         if ($result->numRows() == 0) {
