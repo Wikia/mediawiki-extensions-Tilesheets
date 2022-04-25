@@ -54,7 +54,7 @@ class SheetList extends SpecialPage {
 		$page = intval($opts->getValue('page'));
 
 		// Load data
-		$dbr = wfGetDB(DB_SLAVE);
+		$dbr = wfGetDB(DB_REPLICA);
 		$result = $dbr->select(
 			'ext_tilesheet_images',
 			'COUNT(`mod`) AS row_count'
@@ -79,7 +79,7 @@ class SheetList extends SpecialPage {
 
 		if ($maxRows == 0) {
 			$this->displayFilterForm($opts);
-			$out->addWikiText($this->msg('tilesheet-fail-norows')->text());
+			$out->addWikiTextAsInterface($this->msg('tilesheet-fail-norows')->text());
 			return;
 		}
 
@@ -136,8 +136,8 @@ class SheetList extends SpecialPage {
 
 		// Output page
 		$this->displayFilterForm($opts);
-		$out->addWikiText($pageSelection);
-		$out->addWikiText($table);
+		$out->addWikiTextAsInterface($pageSelection);
+		$out->addWikiTextAsInterface($table);
 	}
 
 	private function displayFilterForm(FormOptions $opts) {
@@ -164,7 +164,6 @@ class SheetList extends SpecialPage {
             ->setWrapperLegendMsg('tilesheet-sheet-list-legend')
             ->setId('ext-tilesheet-sheet-list-filter')
             ->setSubmitTextMsg('tilesheet-sheet-list-submit')
-            ->setSubmitProgressive()
             ->prepareForm()
             ->displayForm(false);
 	}

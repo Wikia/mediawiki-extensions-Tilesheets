@@ -46,7 +46,7 @@ class TilesheetsHooks {
 
 		return true;
 	}
-	
+
 	/**
 	 * Handler for BeforePageDisplay hook.
 	 * @see http://www.mediawiki.org/wiki/Manual:Hooks/BeforePageDisplay
@@ -57,7 +57,7 @@ class TilesheetsHooks {
 	public static function BeforePageDisplay($out, $skin) {
 		// Load default styling module
 		$out->addModuleStyles('ext.tilesheets');
-		
+
 		return true;
 	}
 
@@ -90,7 +90,7 @@ class TilesheetsHooks {
 	 * @return string The localized content, or the provided item's name as fall back.
 	 */
 	public static function IconLocalization(Parser &$parser, $item, $mod, $type = 'name', $language = 'en') {
-		$dbr = wfGetDB(DB_SLAVE);
+		$dbr = wfGetDB(DB_REPLICA);
 		$items = $dbr->select('ext_tilesheet_items', 'entry_id', array('item_name' => $item, 'mod_name' => $mod));
 
 		if ($items->numRows() == 0) {

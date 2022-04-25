@@ -206,7 +206,7 @@ class SheetManager extends SpecialPage {
 	}
 
 	private function displayUpdateForm($mod) {
-		$dbr = wfGetDB(DB_SLAVE);
+		$dbr = wfGetDB(DB_REPLICA);
 		$result = $dbr->select('ext_tilesheet_images', '*', array('`mod`' => $mod));
 		if ($result->numRows() == 0) {
 			return $this->msg('tilesheet-fail-norows')->text();
