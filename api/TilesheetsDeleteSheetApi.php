@@ -1,5 +1,7 @@
 <?php
 
+use Wikimedia\ParamValidator\ParamValidator;
+
 class TilesheetsDeleteSheetApi extends ApiBase {
     public function __construct($query, $moduleName) {
         parent::__construct($query, $moduleName, 'ts');
@@ -8,10 +10,10 @@ class TilesheetsDeleteSheetApi extends ApiBase {
     public function getAllowedParams() {
         return array(
             'mods' => array(
-                ApiBase::PARAM_TYPE => 'string',
-                ApiBase::PARAM_REQUIRED => true,
-                ApiBase::PARAM_ALLOW_DUPLICATES => false,
-                ApiBase::PARAM_ISMULTI => true,
+				ParamValidator::PARAM_TYPE => 'string',
+				ParamValidator::PARAM_REQUIRED => true,
+				ParamValidator::PARAM_ALLOW_DUPLICATES => false,
+				ParamValidator::PARAM_ISMULTI => true,
             ),
             'summary' => null,
             'token' => null,

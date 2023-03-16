@@ -1,5 +1,8 @@
 <?php
 
+use Wikimedia\ParamValidator\ParamValidator;
+use Wikimedia\ParamValidator\TypeDef\IntegerDef;
+
 class TilesheetsDeleteTranslationApi extends ApiBase {
     public function __construct($query, $moduleName) {
         parent::__construct($query, $moduleName, 'ts');
@@ -9,13 +12,13 @@ class TilesheetsDeleteTranslationApi extends ApiBase {
         return array(
             'token' => null,
             'id' => array(
-                ApiBase::PARAM_TYPE => 'integer',
-                ApiBase::PARAM_REQUIRED => true,
-                ApiBase::PARAM_MIN => 1,
+				ParamValidator::PARAM_TYPE => 'integer',
+				ParamValidator::PARAM_REQUIRED => true,
+				IntegerDef::PARAM_MIN => 1,
             ),
             'lang' => array(
-                ApiBase::PARAM_TYPE => 'string',
-                ApiBase::PARAM_REQUIRED => true,
+				ParamValidator::PARAM_TYPE => 'string',
+				ParamValidator::PARAM_REQUIRED => true,
             ),
         );
     }

@@ -1,5 +1,8 @@
 <?php
 
+use Wikimedia\ParamValidator\ParamValidator;
+use Wikimedia\ParamValidator\TypeDef\IntegerDef;
+
 class TilesheetsQuerySheetsApi extends ApiQueryBase {
     public function __construct($query, $moduleName) {
         parent::__construct($query, $moduleName, 'ts');
@@ -8,15 +11,15 @@ class TilesheetsQuerySheetsApi extends ApiQueryBase {
     public function getAllowedParams() {
         return array(
             'limit' => array(
-                ApiBase::PARAM_DFLT => 10,
-                ApiBase::PARAM_TYPE => 'limit',
-                ApiBase::PARAM_MIN => 1,
-                ApiBase::PARAM_MAX => ApiBase::LIMIT_BIG1,
-                ApiBase::PARAM_MAX2 => ApiBase::LIMIT_BIG2,
+				ParamValidator::PARAM_DEFAULT => 10,
+				ParamValidator::PARAM_TYPE => 'limit',
+				IntegerDef::PARAM_MIN => 1,
+				IntegerDef::PARAM_MAX => ApiBase::LIMIT_BIG1,
+				IntegerDef::PARAM_MAX2 => ApiBase::LIMIT_BIG2,
             ),
             'from' => array(
-                ApiBase::PARAM_TYPE => 'string',
-                ApiBase::PARAM_DFLT => '',
+				ParamValidator::PARAM_TYPE => 'string',
+				ParamValidator::PARAM_DEFAULT => '',
             ),
         );
     }

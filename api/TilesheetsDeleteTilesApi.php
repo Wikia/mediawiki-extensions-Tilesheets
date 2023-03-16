@@ -1,5 +1,8 @@
 <?php
 
+use Wikimedia\ParamValidator\ParamValidator;
+use Wikimedia\ParamValidator\TypeDef\IntegerDef;
+
 class TilesheetsDeleteTilesApi extends ApiBase {
     public function __construct($query, $moduleName) {
         parent::__construct($query, $moduleName, 'ts');
@@ -10,10 +13,10 @@ class TilesheetsDeleteTilesApi extends ApiBase {
             'token' => null,
             'summary' => null,
             'ids' => array(
-                ApiBase::PARAM_TYPE => 'integer',
-                ApiBase::PARAM_REQUIRED => true,
-                ApiBase::PARAM_ISMULTI => true,
-                ApiBase::PARAM_MIN => 1,
+				ParamValidator::PARAM_TYPE => 'integer',
+				ParamValidator::PARAM_REQUIRED => true,
+				ParamValidator::PARAM_ISMULTI => true,
+				IntegerDef::PARAM_MIN => 1,
             ),
         );
     }
