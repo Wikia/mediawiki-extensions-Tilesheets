@@ -1,4 +1,7 @@
 <?php
+
+use MediaWiki\MediaWikiServices;
+
 /**
  * SheetsList special page file
  *
@@ -87,7 +90,8 @@ class SheetList extends SpecialPage {
 		$table = "{| class=\"mw-datatable\" style=\"width:100%\"\n";
 		$msgModName = wfMessage('tilesheet-mod-name');
 		$msgSizesName = wfMessage('tilesheet-sizes');
-		$canEdit = in_array("edittilesheets", $this->getUser()->getRights());
+		$canEdit = MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
+			$this->getUser(), 'edittilesheets' );
 		$table .= "!";
 		if ($canEdit) {
 			$table .= " !!";

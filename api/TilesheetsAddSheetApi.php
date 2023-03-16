@@ -1,5 +1,8 @@
 <?php
 
+use MediaWiki\MediaWikiServices;
+use Wikimedia\ParamValidator\ParamValidator;
+
 class TilesheetsAddSheetApi extends ApiBase {
     public function __construct($query, $moduleName) {
         parent::__construct($query, $moduleName, 'ts');
@@ -10,13 +13,13 @@ class TilesheetsAddSheetApi extends ApiBase {
             'token' => null,
             'summary' => null,
             'mod' => array(
-                ApiBase::PARAM_TYPE => 'string',
-                ApiBase::PARAM_REQUIRED => true,
+				ParamValidator::PARAM_TYPE => 'string',
+				ParamValidator::PARAM_REQUIRED => true,
             ),
             'sizes' => array(
-                ApiBase::PARAM_TYPE => 'string',
-                ApiBase::PARAM_DFLT => '16|32',
-                ApiBase::PARAM_ISMULTI => true,
+				ParamValidator::PARAM_TYPE => 'string',
+				ParamValidator::PARAM_DEFAULT => '16|32',
+				ParamValidator::PARAM_ISMULTI => true,
             ),
         );
     }
@@ -44,7 +47,8 @@ class TilesheetsAddSheetApi extends ApiBase {
     }
 
     public function execute() {
-        if (!in_array('edittilesheets', $this->getUser()->getRights())) {
+		if ( !MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
+			$this->getUser(), 'edittilesheets' ) ) {
             $this->dieWithError('You do not have permission to create tilesheets', 'permissiondenied');
         }
 

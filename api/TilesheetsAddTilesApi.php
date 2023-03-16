@@ -1,5 +1,8 @@
 <?php
 
+use MediaWiki\MediaWikiServices;
+use Wikimedia\ParamValidator\ParamValidator;
+
 class TilesheetsAddTilesApi extends ApiBase {
     public function __construct($query, $moduleName) {
         parent::__construct($query, $moduleName, 'ts');
@@ -10,14 +13,14 @@ class TilesheetsAddTilesApi extends ApiBase {
             'token' => null,
             'summary' => null,
             'mod' => array(
-                ApiBase::PARAM_TYPE => 'string',
-                ApiBase::PARAM_REQUIRED => true,
+				ParamValidator::PARAM_TYPE => 'string',
+				ParamValidator::PARAM_REQUIRED => true,
             ),
             'import' => array(
-                ApiBase::PARAM_TYPE => 'string',
-                ApiBase::PARAM_REQUIRED => true,
-                ApiBase::PARAM_ISMULTI => true,
-                ApiBase::PARAM_ALLOW_DUPLICATES => false,
+				ParamValidator::PARAM_TYPE => 'string',
+				ParamValidator::PARAM_REQUIRED => true,
+				ParamValidator::PARAM_ISMULTI => true,
+				ParamValidator::PARAM_ALLOW_DUPLICATES => false,
             ),
         );
     }
@@ -45,7 +48,8 @@ class TilesheetsAddTilesApi extends ApiBase {
     }
 
     public function execute() {
-        if (!in_array('edittilesheets', $this->getUser()->getRights())) {
+		if ( !MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
+			$this->getUser(), 'edittilesheets' ) ) {
             $this->dieWithError('You do not have permission to add tiles', 'permissiondenied');
         }
 
@@ -67,7 +71,7 @@ class TilesheetsAddTilesApi extends ApiBase {
 
         $return = [];
         foreach ($import as $entry) {
-            list($x, $y, $z, $item) = explode(' ', $entry, 4);
+            [$x, $y, $z, $item] = explode(' ', $entry, 4);
             $res = TileManager::createTile($mod, $item, $x, $y, $z, $this->getUser(), $summary);
             // Get the new tile's ID.
             if ($res) {
