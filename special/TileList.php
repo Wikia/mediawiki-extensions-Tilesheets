@@ -1,4 +1,7 @@
 <?php
+
+use MediaWiki\MediaWikiServices;
+
 /**
  * TileList special page file
  *
@@ -134,7 +137,7 @@ class TileList extends SpecialPage {
 
 		if ($maxRows == 0) {
 		    $this->displayFilterForm($opts);
-			$out->addWikiTextAsInterfaceAsInterface($this->msg('tilesheet-fail-norows')->text());
+			$out->addWikiTextAsInterface($this->msg('tilesheet-fail-norows')->text());
 			return;
 		}
 
@@ -146,8 +149,10 @@ class TileList extends SpecialPage {
 		$msgXName = wfMessage('tilesheet-x');
 		$msgYName = wfMessage('tilesheet-y');
 		$msgZName = wfMessage('tilesheet-z');
-		$canEdit = in_array("edittilesheets", $this->getUser()->getRights());
-		$canTranslate = in_array('translatetiles', $this->getUser()->getRights());
+		$canEdit = in_array("edittilesheets", MediaWikiServices::getInstance()->getPermissionManager()
+			->getUserPermissions( $this->getUser() ) );
+		$canTranslate = in_array('translatetiles', MediaWikiServices::getInstance()->getPermissionManager()
+			->getUserPermissions( $this->getUser() ) );
 		$table .= "!";
 		if ($canEdit) {
 			$table .= " !!";
