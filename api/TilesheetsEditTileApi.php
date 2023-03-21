@@ -1,5 +1,6 @@
 <?php
 
+use MediaWiki\MediaWikiServices;
 use Wikimedia\ParamValidator\ParamValidator;
 
 class TilesheetsEditTileApi extends ApiBase {
@@ -56,7 +57,8 @@ class TilesheetsEditTileApi extends ApiBase {
     }
 
     public function execute() {
-        if (!in_array('edittilesheets', $this->getUser()->getRights())) {
+		if (!MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
+			$this->getUser(), 'edittilesheets' ) ) {
             $this->dieWithError('You do not have permission to edit tiles', 'permissiondenied');
         }
 

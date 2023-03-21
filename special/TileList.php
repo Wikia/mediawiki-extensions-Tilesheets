@@ -149,10 +149,10 @@ class TileList extends SpecialPage {
 		$msgXName = wfMessage('tilesheet-x');
 		$msgYName = wfMessage('tilesheet-y');
 		$msgZName = wfMessage('tilesheet-z');
-		$canEdit = in_array("edittilesheets", MediaWikiServices::getInstance()->getPermissionManager()
-			->getUserPermissions( $this->getUser() ) );
-		$canTranslate = in_array('translatetiles', MediaWikiServices::getInstance()->getPermissionManager()
-			->getUserPermissions( $this->getUser() ) );
+		$canEdit = MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
+			$this->getUser(), 'edittilesheets' );
+		$canTranslate = MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
+			$this->getUser(), 'translatetiles' );
 		$table .= "!";
 		if ($canEdit) {
 			$table .= " !!";

@@ -1,5 +1,6 @@
 <?php
 
+use MediaWiki\MediaWikiServices;
 use Wikimedia\ParamValidator\ParamValidator;
 
 class TilesheetsTranslateTileApi extends ApiBase {
@@ -51,7 +52,8 @@ class TilesheetsTranslateTileApi extends ApiBase {
     }
 
     public function execute() {
-        if (!in_array('translatetiles', $this->getUser()->getRights())) {
+		if (!MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
+			$this->getUser(), 'translatetiles' ) ) {
             $this->dieWithError('You do not have permission to add tiles', 'permissiondenied');
         }
 

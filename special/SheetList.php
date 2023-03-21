@@ -90,8 +90,8 @@ class SheetList extends SpecialPage {
 		$table = "{| class=\"mw-datatable\" style=\"width:100%\"\n";
 		$msgModName = wfMessage('tilesheet-mod-name');
 		$msgSizesName = wfMessage('tilesheet-sizes');
-		$canEdit = in_array("edittilesheets", MediaWikiServices::getInstance()->getPermissionManager()
-			->getUserPermissions( $this->getUser() ) );
+		$canEdit = MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
+			$this->getUser(), 'edittilesheets' );
 		$table .= "!";
 		if ($canEdit) {
 			$table .= " !!";
