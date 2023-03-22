@@ -1,12 +1,18 @@
 <?php
 
-use MediaWiki\MediaWikiServices;
+use MediaWiki\Permissions\PermissionManager;
 use Wikimedia\ParamValidator\ParamValidator;
+use Wikimedia\Rdbms\ILoadBalancer;
 
 class TilesheetsEditTileApi extends ApiBase {
-    public function __construct($query, $moduleName) {
-        parent::__construct($query, $moduleName, 'ts');
-    }
+	public function __construct(
+		$query,
+		$moduleName,
+		private PermissionManager $permissionManager,
+		private ILoadBalancer $loadBalancer
+	) {
+		parent::__construct( $query, $moduleName, 'ts' );
+	}
 
     public function getAllowedParams() {
         return array(
@@ -57,10 +63,9 @@ class TilesheetsEditTileApi extends ApiBase {
     }
 
     public function execute() {
-		if (!MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
-			$this->getUser(), 'edittilesheets' ) ) {
-            $this->dieWithError('You do not have permission to edit tiles', 'permissiondenied');
-        }
+		if ( !$this->permissionManager->userHasRight( $this->getUser(), 'edittilesheets' ) ) {
+			$this->dieWithError( 'You do not have permission to edit tiles', 'permissiondenied' );
+		}
 
         $toMod = $this->getParameter('tomod');
         $toName = $this->getParameter('toname');
@@ -74,7 +79,7 @@ class TilesheetsEditTileApi extends ApiBase {
             $this->dieWithError('You have to specify one of tomod, toname, tox, toy, or toz', 'nochangeparams');
         }
 
-        $dbr = wfGetDB(DB_REPLICA);
+		$dbr = $this->loadBalancer->getConnection( DB_REPLICA );
         $entry = $dbr->select('ext_tilesheet_items', '*', array('entry_id' => $id));
 
         if ($entry->numRows() == 0) {

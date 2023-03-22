@@ -1,12 +1,19 @@
 <?php
 
-use MediaWiki\MediaWikiServices;
+use MediaWiki\Permissions\PermissionManager;
 use Wikimedia\ParamValidator\ParamValidator;
+use Wikimedia\ParamValidator\TypeDef\IntegerDef;
+use Wikimedia\Rdbms\ILoadBalancer;
 
 class TilesheetsTranslateTileApi extends ApiBase {
-    public function __construct($query, $moduleName) {
-        parent::__construct($query, $moduleName, 'ts');
-    }
+	public function __construct(
+		$query,
+		$moduleName,
+		private PermissionManager $permissionManager,
+		private ILoadBalancer $loadBalancer
+	) {
+		parent::__construct( $query, $moduleName, 'ts' );
+	}
 
     public function getAllowedParams() {
         return array(
@@ -52,10 +59,9 @@ class TilesheetsTranslateTileApi extends ApiBase {
     }
 
     public function execute() {
-		if (!MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
-			$this->getUser(), 'translatetiles' ) ) {
-            $this->dieWithError('You do not have permission to add tiles', 'permissiondenied');
-        }
+		if ( !$this->permissionManager->userHasRight( $this->getUser(), 'translatetiles' ) ) {
+			$this->dieWithError( 'You do not have permission to add tiles', 'permissiondenied' );
+		}
 
         $id = $this->getParameter('id');
         $lang = $this->getParameter('lang');
@@ -66,7 +72,7 @@ class TilesheetsTranslateTileApi extends ApiBase {
             $this->dieWithError('You have to specify one of name or description', 'nochangeparam');
         }
 
-        $dbr = wfGetDB(DB_REPLICA);
+		$dbr = $this->loadBalancer->getConnection( DB_REPLICA );
         $stuff = $dbr->select('ext_tilesheet_languages', '*', array('entry_id' => $id, 'lang' => $lang));
 
         TileTranslator::updateTable($id, $name, $desc, $lang, $this->getUser());

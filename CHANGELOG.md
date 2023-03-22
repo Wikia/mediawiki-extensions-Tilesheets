@@ -2,6 +2,10 @@
 This changelog only shows recent version history, because of the lack of documentation from the former maintainers. The very first changelog (1.1.2) is likely incomplete.
 
 ## Version 5
+### 5.1.0
+* Compatibility fixes for mediawiki 1.39
+* Internal code refactor and reformat
+
 ### 5.0.0
 * Fix license name in Special:Version (#99, #100) (xbony2)
 * Implement Z coordinate for tiles (ext_tilesheet_items table) (#76, #98, somewhat related to #82)

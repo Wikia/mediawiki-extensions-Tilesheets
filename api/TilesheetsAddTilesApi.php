@@ -1,12 +1,18 @@
 <?php
 
-use MediaWiki\MediaWikiServices;
+use MediaWiki\Permissions\PermissionManager;
 use Wikimedia\ParamValidator\ParamValidator;
+use Wikimedia\Rdbms\ILoadBalancer;
 
 class TilesheetsAddTilesApi extends ApiBase {
-    public function __construct($query, $moduleName) {
-        parent::__construct($query, $moduleName, 'ts');
-    }
+	public function __construct(
+		$query,
+		$moduleName,
+		private PermissionManager $permissionManager,
+		private ILoadBalancer $loadBalancer
+	) {
+		parent::__construct( $query, $moduleName, 'ts' );
+	}
 
     public function getAllowedParams() {
         return array(
@@ -48,16 +54,15 @@ class TilesheetsAddTilesApi extends ApiBase {
     }
 
     public function execute() {
-		if ( !MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
-			$this->getUser(), 'edittilesheets' ) ) {
-            $this->dieWithError('You do not have permission to add tiles', 'permissiondenied');
-        }
+		if ( !$this->permissionManager->userHasRight( $this->getUser(), 'edittilesheets' ) ) {
+			$this->dieWithError( 'You do not have permission to add tiles', 'permissiondenied' );
+		}
 
         $mod = $this->getParameter('mod');
         $summary = $this->getParameter('summary');
         $import = $this->getParameter('import');
 
-        $dbr = wfGetDB(DB_REPLICA);
+        $dbr = $this->loadBalancer->getConnection(DB_REPLICA);
         $result = $dbr->select(
             'ext_tilesheet_images',
             '`mod`',

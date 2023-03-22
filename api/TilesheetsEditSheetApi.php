@@ -1,12 +1,18 @@
 <?php
 
-use MediaWiki\MediaWikiServices;
+use MediaWiki\Permissions\PermissionManager;
 use Wikimedia\ParamValidator\ParamValidator;
+use Wikimedia\Rdbms\ILoadBalancer;
 
 class TilesheetsEditSheetApi extends ApiBase {
-    public function __construct($query, $moduleName) {
-        parent::__construct($query, $moduleName, 'ts');
-    }
+	public function __construct(
+		$query,
+		$moduleName,
+		private PermissionManager $permissionManager,
+		private ILoadBalancer $loadBalancer
+	) {
+		parent::__construct( $query, $moduleName, 'ts' );
+	}
 
     public function getAllowedParams() {
         return array(
@@ -49,10 +55,9 @@ class TilesheetsEditSheetApi extends ApiBase {
     }
 
     public function execute() {
-		if (!MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
-			$this->getUser(), 'edittilesheets' ) ) {
-            $this->dieWithError('You do not have permission to edit sheets', 'permissiondenied');
-        }
+		if ( !$this->permissionManager->userHasRight( $this->getUser(), 'edittilesheets' ) ) {
+			$this->dieWithError( 'You do not have permission to edit sheets', 'permissiondenied' );
+		}
 
         $curMod = $this->getParameter('mod');
         $toMod = $this->getParameter('tomod');
@@ -63,7 +68,7 @@ class TilesheetsEditSheetApi extends ApiBase {
             $this->dieWithError('You have to specify one of tomod or tosizes', 'nochangeparams');
         }
 
-        $dbr = wfGetDB(DB_REPLICA);
+		$dbr = $this->loadBalancer->getConnection( DB_REPLICA );
         $entry = $dbr->select('ext_tilesheet_images', '*', array('`mod`' => $curMod));
 
         if ($entry->numRows() == 0) {

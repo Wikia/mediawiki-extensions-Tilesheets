@@ -2,11 +2,16 @@
 
 use Wikimedia\ParamValidator\ParamValidator;
 use Wikimedia\ParamValidator\TypeDef\IntegerDef;
+use Wikimedia\Rdbms\ILoadBalancer;
 
 class TilesheetsQuerySheetsApi extends ApiQueryBase {
-    public function __construct($query, $moduleName) {
-        parent::__construct($query, $moduleName, 'ts');
-    }
+	public function __construct(
+		$query,
+		$moduleName,
+		private ILoadBalancer $loadBalancer
+	) {
+		parent::__construct( $query, $moduleName, 'ts' );
+	}
 
     public function getAllowedParams() {
         return array(
@@ -32,9 +37,9 @@ class TilesheetsQuerySheetsApi extends ApiQueryBase {
     }
 
     public function execute() {
-        $limit = $this->getParameter('limit');
-        $from = $this->getParameter('from');
-        $dbr = wfGetDB(DB_REPLICA);
+		$limit = (int)$this->getParameter( 'limit' );
+		$from = $this->getParameter( 'from' );
+		$dbr = $this->loadBalancer->getConnection( DB_REPLICA );
 
         $results = $dbr->select(
             'ext_tilesheet_images',

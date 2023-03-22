@@ -1,8 +1,10 @@
 <?php
 
+use Wikimedia\Rdbms\ILoadBalancer;
+
 class ViewTile extends SpecialPage {
-	public function __construct() {
-		parent::__construct('ViewTile');
+	public function __construct( private ILoadBalancer $loadBalancer ) {
+		parent::__construct( 'ViewTile' );
 	}
 
 	protected function getGroupName() {
@@ -16,7 +18,7 @@ class ViewTile extends SpecialPage {
 		$out->addModuleStyles('ext.tilesheets.special');
 		$out->addModules('ext.tilesheets.viewtile');
 
-		$dbr = wfGetDB(DB_REPLICA);
+		$dbr = $this->loadBalancer->getConnection( DB_REPLICA );
 		$result = $dbr->select('ext_tilesheet_items', '*', array('entry_id' => $subPage));
 		if ($result->numRows() == 0) {
 			$out->addWikiTextAsInterface($this->msg('tilesheet-fail-norows')->text());

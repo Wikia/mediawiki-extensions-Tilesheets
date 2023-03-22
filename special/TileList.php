@@ -1,6 +1,7 @@
 <?php
 
-use MediaWiki\MediaWikiServices;
+use MediaWiki\Permissions\PermissionManager;
+use Wikimedia\Rdbms\ILoadBalancer;
 
 /**
  * TileList special page file
@@ -16,8 +17,12 @@ class TileList extends SpecialPage {
 	/**
 	 * Calls parent constructor and sets special page title
 	 */
-	public function __construct() {
-		parent::__construct('TileList');
+	public function __construct(
+		private PermissionManager $permissionManager,
+		private ILoadBalancer $loadBalancer,
+		private Config $config
+	) {
+		parent::__construct( 'TileList' );
 	}
 
 	/**
@@ -36,7 +41,6 @@ class TileList extends SpecialPage {
 	 * @param null|string $par Subpage name
 	 */
 	public function execute($par) {
-		global $wgQueryPageDefaultLimit;
 		$out = $this->getOutput();
 		$out->enableOOUI();
 
@@ -46,7 +50,7 @@ class TileList extends SpecialPage {
 
 		$opts = new FormOptions();
 
-		$opts->add('limit', $wgQueryPageDefaultLimit);
+		$opts->add( 'limit', $this->config->get( 'QueryPageDefaultLimit' ) );
 		$opts->add('mod', '');
 		$opts->add('regex', '');
 		$opts->add('langs', '');
@@ -67,7 +71,7 @@ class TileList extends SpecialPage {
 		$from = intval($opts->getValue('from'));
 
 		// Load data
-		$dbr = wfGetDB(DB_REPLICA);
+		$dbr = $this->loadBalancer->getConnection( DB_REPLICA );
 		$formattedEntryIDs = '';
 
 		if (!empty($langs)) {
@@ -149,10 +153,8 @@ class TileList extends SpecialPage {
 		$msgXName = wfMessage('tilesheet-x');
 		$msgYName = wfMessage('tilesheet-y');
 		$msgZName = wfMessage('tilesheet-z');
-		$canEdit = MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
-			$this->getUser(), 'edittilesheets' );
-		$canTranslate = MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
-			$this->getUser(), 'translatetiles' );
+		$canEdit = $this->permissionManager->userHasRight( $this->getUser(), 'edittilesheets' );
+		$canTranslate = $this->permissionManager->userHasRight( $this->getUser(), 'translatetiles' );
 		$table .= "!";
 		if ($canEdit) {
 			$table .= " !!";

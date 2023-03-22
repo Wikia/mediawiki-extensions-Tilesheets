@@ -14,7 +14,7 @@ class CreateTileSheet extends SpecialPage {
 	 * Calls parent constructor and sets special page title
 	 */
 	public function __construct() {
-		parent::__construct('CreateTileSheet', 'importtilesheets');
+		parent::__construct( 'CreateTileSheet', 'importtilesheets' );
 	}
 
 	/**
@@ -60,7 +60,7 @@ class CreateTileSheet extends SpecialPage {
 		// Process and save POST data
 		if ($_POST) {
 			// XSRF prevention
-			if ( !$this->getUser()->matchEditToken( $this->getRequest()->getVal( 'wpEditToken' ) ) ) {
+			if ( !$this->getContext()->getCsrfTokenSet()->matchTokenField() ) {
 				return;
 			}
 
@@ -81,7 +81,7 @@ class CreateTileSheet extends SpecialPage {
 			$input = explode("\n", trim($opts->getValue('input')));
 			foreach ($input as $line) {
 				if (trim($line) == "") continue;
-				list($x, $y, $z, $item) = explode(" ", $line, 4);
+				[$x, $y, $z, $item] = explode(" ", $line, 4);
 				$item = trim($item);
 
 				// Create tile

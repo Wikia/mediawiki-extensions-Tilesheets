@@ -1,4 +1,7 @@
 <?php
+
+use MediaWiki\MediaWikiServices;
+
 /**
  * Tilesheets main body file
  *
@@ -34,7 +37,7 @@ class Tilesheets {
 
 		TilesheetsError::log(wfMessage('tilesheets-log-prepare')->params($size, $item, $mod)->text());
 
-		$dbr = wfGetDB(DB_REPLICA);
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_REPLICA );
 
 		if (!isset(self::$mQueriedItems[$item])) {
 			$results = $dbr->select('ext_tilesheet_items','*',array('item_name' => $item));
@@ -135,7 +138,7 @@ class Tilesheets {
 		$page = $title->getText();
 		$namespace = $title->getNamespace();
 		self::$tileLinks[$namespace][$page][] = $entryID;
-		$file = wfFindFile("Tilesheet $mod $size $z.png");
+		$file = MediaWikiServices::getInstance()->getRepoGroup()->findFile("Tilesheet $mod $size $z.png");
 		if ($file === false) {
 			$parser->addTrackingCategory('tilesheet-missing-image-category');
 			TilesheetsError::warn(wfMessage('tilesheets-warning-noimage')->params($mod, $size, $z)->text());
@@ -154,7 +157,7 @@ class Tilesheets {
 	 * @return mixed
 	 */
 	public static function getModTileSizes($mod) {
-		$dbr = wfGetDB(DB_REPLICA);
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_REPLICA );
 		if (!isset(self::$mQueriedSizes[$mod])) {
 			$result = $dbr->select('ext_tilesheet_images','sizes',array("`mod`" => $mod));
 			TilesheetsError::query($dbr->lastQuery());
@@ -197,7 +200,7 @@ class Tilesheets {
 	 * @throws MWException		See Database#query.
 	 */
 	public static function updateSheetRow($curMod, $toMod, $toSizes, $user, $comment = '') {
-		$dbw = wfGetDB(DB_MASTER);
+		$dbw = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 		$stuff = $dbw->select('ext_tilesheet_images', '*', array('`mod`' => $curMod));
 		$result = $dbw->update('ext_tilesheet_images', array('sizes' => $toSizes, '`mod`' => $toMod), array('`mod`' => $curMod));
 
