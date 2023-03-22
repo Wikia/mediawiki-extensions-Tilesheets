@@ -1,6 +1,6 @@
 {
 	"name": "Tilesheets",
-	"version": "5.0.0",
+	"version": "5.1.0",
 	"author": [
 		"[http://ftb.gamepedia.com/User:Jinbobo Jinbobo]",
 		"[http://ftb.gamepedia.com/User:Retep998 Peter Atashian]",
@@ -27,18 +27,34 @@
 		}
 	},
 	"SpecialPages": {
-		"TileList": "TileList",
-		"SheetList": "SheetList",
-		"CreateTileSheet": "CreateTileSheet",
-		"TileManager": "TileManager",
-		"SheetManager": "SheetManager",
+		"TileList": {
+			"class": "TileList",
+			"services": ["PermissionManager", "DBLoadBalancer", "MainConfig"]
+		},
+		"SheetList": {
+			"class": "SheetList",
+			"services": ["PermissionManager", "DBLoadBalancer", "MainConfig"]
+		},
+		"CreateTileSheet": {
+			"class": "CreateTileSheet"
+		},
+		"TileManager": {
+			"class": "TileManager"
+		},
+		"SheetManager": {
+			"class": "SheetManager"
+		},
 		"TileTranslator": "TileTranslator",
-		"ViewTile": "ViewTile",
-		"WhatUsesThisTile": "WhatUsesThisTile"
+		"ViewTile":{
+			"class": "ViewTile",
+			"services": ["DBLoadBalancer"]
+		},
+		"WhatUsesThisTile": {
+			"class": "WhatUsesThisTile",
+			"services": ["DBLoadBalancer"]
+		}
 	},
-	"LogTypes": [
-		"tilesheet"
-	],
+	"LogTypes": ["tilesheet"],
 	"LogActionsHandlers": {
 		"tilesheet/*": "LogFormatter"
 	},
@@ -77,20 +93,56 @@
 		"TilesheetsTranslateTileApi": "api/TilesheetsTranslateTileApi.php"
 	},
 	"APIModules": {
-		"addtiles": "TilesheetsAddTilesApi",
-		"deletesheet": "TilesheetsDeleteSheetApi",
-		"createsheet": "TilesheetsAddSheetApi",
-		"deletetiles": "TilesheetsDeleteTilesApi",
-		"edittile": "TilesheetsEditTileApi",
-		"editsheet": "TilesheetsEditSheetApi",
-		"deletetranslation": "TilesheetsDeleteTranslationApi",
-		"translatetile": "TilesheetsTranslateTileApi"
+		"addtiles": {
+			"class": "TilesheetsAddTilesApi",
+			"services": ["PermissionManager", "DBLoadBalancer"]
+		},
+		"deletesheet": {
+			"class": "TilesheetsDeleteSheetApi",
+			"services": ["PermissionManager"]
+		},
+		"createsheet": {
+			"class": "TilesheetsAddSheetApi",
+			"services": ["PermissionManager"]
+		},
+		"deletetiles": {
+			"class": "TilesheetsDeleteTilesApi",
+			"services": ["PermissionManager"]
+		},
+		"edittile": {
+			"class": "TilesheetsEditTileApi",
+			"services": ["PermissionManager", "DBLoadBalancer"]
+		},
+		"editsheet": {
+			"class": "TilesheetsEditSheetApi",
+			"services": ["PermissionManager", "DBLoadBalancer"]
+		},
+		"deletetranslation": {
+			"class": "TilesheetsDeleteTranslationApi",
+			"services": ["PermissionManager"]
+		},
+		"translatetile": {
+			"class": "TilesheetsTranslateTileApi",
+			"services": ["PermissionManager", "DBLoadBalancer"]
+		}
 	},
 	"APIListModules": {
-		"tilesheets": "TilesheetsQuerySheetsApi",
-		"tiles": "TilesheetsQueryTilesApi",
-		"tiletranslations": "TilesheetsQueryTranslationsApi",
-		"tileusages": "TilesheetsQueryTileUsagesApi"
+		"tilesheets":{
+			"class": "TilesheetsQuerySheetsApi",
+			"services": ["DBLoadBalancer"]
+		},
+		"tiles": {
+			"class": "TilesheetsQueryTilesApi",
+			"services": ["DBLoadBalancer"]
+		},
+		"tiletranslations": {
+			"class": "TilesheetsQueryTranslationsApi",
+			"services": ["DBLoadBalancer"]
+		},
+		"tileusages": {
+			"class": "TilesheetsQueryTileUsagesApi",
+			"services": ["DBLoadBalancer"]
+		}
 	},
 	"ResourceModules": {
 		"ext.tilesheets": {
@@ -136,16 +188,17 @@
 		]
 	},
 	"config": {
-		"ShowExceptionDetails": true,
-		"TilesheetsDebug": false,
-		"TrackingCategories": [
-			"tilesheet-invalid-sheet-category",
-			"tilesheet-invalid-size-category",
-			"tilesheet-missing-image-category",
-			"tilesheet-missing-item-category",
-			"tilesheet-no-mod-provided-category",
-			"tilesheet-no-mod-provided-easy-category"
-		]
+		"TilesheetsDebug": {
+			"value" : false
+		}
 	},
-	"manifest_version": 1
+	"TrackingCategories": [
+		"tilesheet-invalid-sheet-category",
+		"tilesheet-invalid-size-category",
+		"tilesheet-missing-image-category",
+		"tilesheet-missing-item-category",
+		"tilesheet-no-mod-provided-category",
+		"tilesheet-no-mod-provided-easy-category"
+	],
+	"manifest_version": 2
 }

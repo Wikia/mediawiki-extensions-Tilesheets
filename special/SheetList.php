@@ -1,6 +1,8 @@
 <?php
 
 use MediaWiki\MediaWikiServices;
+use MediaWiki\Permissions\PermissionManager;
+use Wikimedia\Rdbms\ILoadBalancer;
 
 /**
  * SheetsList special page file
@@ -16,8 +18,12 @@ class SheetList extends SpecialPage {
 	/**
 	 * Calls parent constructor and sets special page title
 	 */
-	public function __construct() {
-		parent::__construct('SheetList');
+	public function __construct(
+		private PermissionManager $permissionManager,
+		private ILoadBalancer $loadBalancer,
+		private Config $config
+	) {
+		parent::__construct( 'SheetList' );
 	}
 
 	/**
@@ -36,7 +42,6 @@ class SheetList extends SpecialPage {
 	 * @param null|string $par Subpage name
 	 */
 	public function execute($par) {
-		global $wgQueryPageDefaultLimit;
 		$out = $this->getOutput();
 		$out->enableOOUI();
 
@@ -46,7 +51,7 @@ class SheetList extends SpecialPage {
 
 		$opts = new FormOptions();
 
-		$opts->add('limit', $wgQueryPageDefaultLimit);
+		$opts->add('limit', $this->config->get('QueryPageDefaultLimit'));
 		$opts->add('page', 0);
 
 		$opts->fetchValuesFromRequest($this->getRequest());
@@ -57,7 +62,7 @@ class SheetList extends SpecialPage {
 		$page = intval($opts->getValue('page'));
 
 		// Load data
-		$dbr = wfGetDB(DB_REPLICA);
+		$dbr = $this->loadBalancer->getConnection( DB_REPLICA );
 		$result = $dbr->select(
 			'ext_tilesheet_images',
 			'COUNT(`mod`) AS row_count'
@@ -90,8 +95,7 @@ class SheetList extends SpecialPage {
 		$table = "{| class=\"mw-datatable\" style=\"width:100%\"\n";
 		$msgModName = wfMessage('tilesheet-mod-name');
 		$msgSizesName = wfMessage('tilesheet-sizes');
-		$canEdit = MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
-			$this->getUser(), 'edittilesheets' );
+		$canEdit = $this->permissionManager->userHasRight( $this->getUser(), 'edittilesheets' );
 		$table .= "!";
 		if ($canEdit) {
 			$table .= " !!";

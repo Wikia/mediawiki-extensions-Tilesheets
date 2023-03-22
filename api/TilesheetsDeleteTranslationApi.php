@@ -1,13 +1,17 @@
 <?php
 
-use MediaWiki\MediaWikiServices;
+use MediaWiki\Permissions\PermissionManager;
 use Wikimedia\ParamValidator\ParamValidator;
 use Wikimedia\ParamValidator\TypeDef\IntegerDef;
 
 class TilesheetsDeleteTranslationApi extends ApiBase {
-    public function __construct($query, $moduleName) {
-        parent::__construct($query, $moduleName, 'ts');
-    }
+	public function __construct(
+		$query,
+		$moduleName,
+		private PermissionManager $permissionManager
+	) {
+		parent::__construct( $query, $moduleName, 'ts' );
+	}
 
     public function getAllowedParams() {
         return array(
@@ -47,10 +51,9 @@ class TilesheetsDeleteTranslationApi extends ApiBase {
     }
 
     public function execute() {
-		if (!MediaWikiServices::getInstance()->getPermissionManager()->userHasRight(
-			$this->getUser(), 'edittilesheets' ) ) {
-            $this->dieWithError('You do not have permission to delete tile translations', 'permissiondenied');
-        }
+		if ( !$this->permissionManager->userHasRight( $this->getUser(), 'edittilesheets' ) ) {
+			$this->dieWithError( 'You do not have permission to delete tile translations', 'permissiondenied' );
+		}
 
         $id = $this->getParameter('id');
         $lang = $this->getParameter('lang');

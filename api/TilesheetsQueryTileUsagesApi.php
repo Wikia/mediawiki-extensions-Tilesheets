@@ -3,10 +3,15 @@
 
 use Wikimedia\ParamValidator\ParamValidator;
 use Wikimedia\ParamValidator\TypeDef\IntegerDef;
+use Wikimedia\Rdbms\ILoadBalancer;
 
 class TilesheetsQueryTileUsagesApi extends ApiQueryBase {
-	public function __construct($query, $moduleName) {
-		parent::__construct($query, $moduleName, 'ts');
+	public function __construct(
+		$query,
+		$moduleName,
+		private ILoadBalancer $loadBalancer
+	) {
+		parent::__construct( $query, $moduleName, 'ts' );
 	}
 
 	public function getAllowedParams() {
@@ -42,11 +47,11 @@ class TilesheetsQueryTileUsagesApi extends ApiQueryBase {
 	}
 
 	public function execute() {
-		$limit = $this->getParameter('limit');
+		$limit = (int)$this->getParameter( 'limit' );
 		$from = $this->getParameter('from');
 		$tileID = $this->getParameter('tile');
 		$namespaces = $this->getParameter('namespace');
-		$dbr = wfGetDB(DB_REPLICA);
+		$dbr = $this->loadBalancer->getConnection( DB_REPLICA );
 
 		$conditions = array(
 			'tl_to = ' . intval($tileID),

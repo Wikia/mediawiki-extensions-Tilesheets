@@ -1,10 +1,12 @@
 <?php
 
+use Wikimedia\Rdbms\ILoadBalancer;
+
 class WhatUsesThisTile extends SpecialPage {
 	private $target;
 
-	public function __construct() {
-		parent::__construct('WhatUsesThisTile');
+	public function __construct( private ILoadBalancer $loadBalancer ) {
+		parent::__construct( 'WhatUsesThisTile' );
 	}
 
 	protected function getGroupName() {
@@ -38,7 +40,7 @@ class WhatUsesThisTile extends SpecialPage {
 		$page = intval($opts->getValue('page'));
 		$from = intval($opts->getValue('from'));
 
-		$dbr = wfGetDB(DB_REPLICA);
+		$dbr = $this->loadBalancer->getConnection( DB_REPLICA );
 		$tileData = $dbr->select('ext_tilesheet_items', '*', array('entry_id' => $entryID));
 		$out->addBacklinkSubtitle(Title::newFromText("ViewTile/$entryID", NS_SPECIAL));
 		if ($tileData->numRows() == 0) {

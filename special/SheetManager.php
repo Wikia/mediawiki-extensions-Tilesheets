@@ -1,4 +1,7 @@
 <?php
+
+use MediaWiki\MediaWikiServices;
+
 /**
  * SheetManager special page file
  *
@@ -67,9 +70,17 @@ class SheetManager extends SpecialPage {
 		if ($mod == '') return;
 
 		// Update stuff
-		if ($opts->getValue('update') == 1) Tilesheets::updateSheetRow($mod, $mod, $sizes, $this->getUser());
-		if ($opts->getValue('delete') == 1 && in_array('sysop', $this->getUser()->getGroups())) self::deleteEntry($mod, $this->getUser());
-		if ($opts->getValue('truncate') == 1 || $opts->getValue('delete') == 1 && in_array('sysop', $this->getUser()->getGroups())) self::truncateTable($mod, $this->getUser());
+		$userGroupManager = MediaWikiServices::getInstance()->getUserGroupManager();
+		$userIsSysop = in_array( 'sysop', $userGroupManager->getUserGroups( $this->getUser() ) );
+		if ( $opts->getValue( 'update' ) == 1 ) {
+			Tilesheets::updateSheetRow( $mod, $mod, $sizes, $this->getUser() );
+		}
+		if ( $opts->getValue( 'delete' ) == 1 && $userIsSysop ) {
+			self::deleteEntry( $mod, $this->getUser() );
+		}
+		if ( $opts->getValue( 'truncate' ) == 1 || $opts->getValue( 'delete' ) == 1 && $userIsSysop ) {
+			self::truncateTable( $mod, $this->getUser() );
+		}
 
 		// Output update table
 		$this->displayUpdateForm($mod);
@@ -84,7 +95,7 @@ class SheetManager extends SpecialPage {
 	 * @return  bool
 	 */
 	public static function deleteEntry($mod, $user, $comment = "") {
-		$dbw = wfGetDB(DB_MASTER);
+		$dbw = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 		$stuff = $dbw->select('ext_tilesheet_images', '*', array('`mod`' => $mod));
 		$result = $dbw->delete('ext_tilesheet_images', array('`mod`' => $mod));
 
@@ -114,7 +125,7 @@ class SheetManager extends SpecialPage {
 	 * @return bool
 	 */
 	public static function truncateTable($mod, $user, $comment = "") {
-		$dbw = wfGetDB(DB_MASTER);
+		$dbw = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 		$stuff = $dbw->select('ext_tilesheet_items', '*', array('mod_name' => $mod));
 		$result = $dbw->delete('ext_tilesheet_items', array('mod_name' => $mod));
 
@@ -139,7 +150,7 @@ class SheetManager extends SpecialPage {
 	}
 
 	public static function createSheet($mod, $sizes, $user, $comment = "") {
-		$dbw = wfGetDB(DB_MASTER);
+		$dbw = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 		// Check if already exists
 		$result = $dbw->select('ext_tilesheet_images', 'COUNT(`mod`) AS count', array('`mod`' => $mod));
 
@@ -206,7 +217,7 @@ class SheetManager extends SpecialPage {
 	}
 
 	private function displayUpdateForm($mod) {
-		$dbr = wfGetDB(DB_REPLICA);
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_REPLICA );
 		$result = $dbr->select('ext_tilesheet_images', '*', array('`mod`' => $mod));
 		if ($result->numRows() == 0) {
 			return $this->msg('tilesheet-fail-norows')->text();

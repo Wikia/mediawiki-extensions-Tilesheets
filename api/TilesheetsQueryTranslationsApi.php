@@ -2,11 +2,16 @@
 
 use Wikimedia\ParamValidator\ParamValidator;
 use Wikimedia\ParamValidator\TypeDef\IntegerDef;
+use Wikimedia\Rdbms\ILoadBalancer;
 
 class TilesheetsQueryTranslationsApi extends ApiQueryBase {
-    public function __construct($query, $moduleName) {
-        parent::__construct($query, $moduleName, 'ts');
-    }
+	public function __construct(
+		$query,
+		$moduleName,
+		private ILoadBalancer $loadBalancer
+	) {
+		parent::__construct( $query, $moduleName, 'ts' );
+	}
 
     public function getAllowedParams() {
         return array(
@@ -34,7 +39,7 @@ class TilesheetsQueryTranslationsApi extends ApiQueryBase {
         $id = $this->getParameter('id');
         $lang = $this->getParameter('lang');
 
-        $dbr = wfGetDB(DB_REPLICA);
+		$dbr = $this->loadBalancer->getConnection( DB_REPLICA );
 
         $results = $dbr->select(
             'ext_tilesheet_languages',
