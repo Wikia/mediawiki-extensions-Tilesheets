@@ -11,20 +11,19 @@ use MediaWiki\MediaWikiServices;
  * @author Jinbobo <paullee05149745@gmail.com>
  * @license
  */
-
 class TileManager extends SpecialPage {
 	/**
 	 * Calls parent constructor and sets special page title
 	 */
 	public function __construct() {
-		parent::__construct('TileManager', 'edittilesheets');
+		parent::__construct( 'TileManager', 'edittilesheets' );
 	}
 
 	/**
 	 * Return the group name for this special page.
 	 *
-	 * @access	protected
-	 * @return	string
+	 * @access    protected
+	 * @return    string
 	 */
 	protected function getGroupName() {
 		return 'tilesheet';
@@ -35,13 +34,13 @@ class TileManager extends SpecialPage {
 	 *
 	 * @param null|string $par Subpage name
 	 */
-	public function execute($par) {
+	public function execute( $par ) {
 		// Restrict access from unauthorized users
 		$this->checkPermissions();
 
 		$out = $this->getOutput();
 		$out->enableOOUI();
-		$out->addModuleStyles('ext.tilesheets.special');
+		$out->addModuleStyles( 'ext.tilesheets.special' );
 
 		$this->setHeaders();
 		$this->outputHeader();
@@ -60,88 +59,130 @@ class TileManager extends SpecialPage {
 		$opts->fetchValuesFromRequest( $this->getRequest() );
 
 		// Give precedence to subpage syntax
-		if ( isset($par)) {
+		if ( isset( $par ) ) {
 			$opts->setValue( 'id', $par );
 		}
 
-		$id = $opts->getValue('id');
-		$mod = $opts->getValue('mod');
-		$item = htmlspecialchars_decode($opts->getValue('item'));
-		$x = $opts->getValue('x');
-		$y = $opts->getValue('y');
-		$z = $opts->getValue('z');
+		$id = $opts->getValue( 'id' );
+		$mod = $opts->getValue( 'mod' );
+		$item = htmlspecialchars_decode( $opts->getValue( 'item' ) );
+		$x = $opts->getValue( 'x' );
+		$y = $opts->getValue( 'y' );
+		$z = $opts->getValue( 'z' );
 
 		// Output filter
-		$out->addHTML($this->buildSearchForm());
+		$out->addHTML( $this->buildSearchForm() );
 
-		if ($id == 0) return;
+		if ( $id == 0 ) {
+			return;
+		}
 
 		// Process and save POST data
-		if ($opts->getValue('delete') == 1) {
-			self::deleteEntry($id, $this->getUser());
-		} else if ($opts->getValue('update') == 1) {
-			self::updateTable($id, $item, $mod, $x, $y, $z, $this->getUser());
+		if ( $opts->getValue( 'delete' ) == 1 ) {
+			self::deleteEntry( $id, $this->getUser() );
+		} else {
+			if ( $opts->getValue( 'update' ) == 1 ) {
+				self::updateTable( $id, $item, $mod, $x, $y, $z, $this->getUser() );
+			}
 		}
 
 		// Output update form
-		$this->displayUpdateForm($id);
+		$this->displayUpdateForm( $id );
 	}
 
-	public static function createTile($mod, $item, $x, $y, $z, $user, $comment = "") {
+	public static function createTile( $mod, $item, $x, $y, $z, $user, $comment = "" ) {
 		$dbw = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 		// Check if position on tilesheet is already occupied
-		$result = $dbw->select('ext_tilesheet_items', 'COUNT(`entry_id`) AS count', array('`mod_name`' => $mod, '`x`' => intval($x), '`y`' => intval($y), '`z`' => intval($z)));
-		if ($result->current()->count != 0) return false;
+		$result =
+			$dbw->select(
+				'ext_tilesheet_items',
+				'COUNT(`entry_id`) AS count',
+				[
+					'`mod_name`' => $mod,
+					'`x`' => intval( $x ),
+					'`y`' => intval( $y ),
+					'`z`' => intval( $z ),
+				]
+			);
+		if ( $result->current()->count != 0 ) {
+			return false;
+		}
 
 		// Check if item is already defined
-		$result = $dbw->select('ext_tilesheet_items', 'COUNT(`entry_id`) AS count', array('`mod_name`' => $mod, '`item_name`' => $item));
-		if ($result->current()->count != 0) return false;
+		$result =
+			$dbw->select(
+				'ext_tilesheet_items',
+				'COUNT(`entry_id`) AS count',
+				[ '`mod_name`' => $mod, '`item_name`' => $item ]
+			);
+		if ( $result->current()->count != 0 ) {
+			return false;
+		}
 
 		// Insert to tilesheet list
-		$result = $dbw->insert('ext_tilesheet_items', array(
+		$result = $dbw->insert( 'ext_tilesheet_items', [
 			'`item_name`' => $item,
 			'`mod_name`' => $mod,
 			'`x`' => $x,
 			'`y`' => $y,
-			'`z`' => $z));
+			'`z`' => $z,
+		] );
 
-		if ($result != false) {
-			$target = empty($mod) || $mod == "undefined" ? $item : "$item ($mod)";
+		if ( $result != false ) {
+			$target = empty( $mod ) || $mod == "undefined" ? $item : "$item ($mod)";
 
 			// Start log
-			$logEntry = new ManualLogEntry('tilesheet', 'createtile');
-			$logEntry->setPerformer($user);
-			$logEntry->setTarget(Title::newFromText("Tile/$target", NS_SPECIAL));
-			$logEntry->setComment($comment);
-			$logEntry->setParameters(array("4::mod" => $mod, "5::item" => $item, "6::x" => $x, "7::y" => $y, "8::z" => $z));
+			$logEntry = new ManualLogEntry( 'tilesheet', 'createtile' );
+			$logEntry->setPerformer( $user );
+			$logEntry->setTarget( Title::newFromText( "Tile/$target", NS_SPECIAL ) );
+			$logEntry->setComment( $comment );
+			$logEntry->setParameters(
+				[ "4::mod" => $mod, "5::item" => $item, "6::x" => $x, "7::y" => $y, "8::z" => $z ]
+			);
 			$logId = $logEntry->insert();
-			$logEntry->publish($logId);
+			$logEntry->publish( $logId );
 			// End log
-		} else return false;
+		} else {
+			return false;
+		}
 
 		return true;
 	}
 
-	public static function deleteEntry($id, $user, $comment = "") {
+	public static function deleteEntry( $id, $user, $comment = "" ) {
 		$dbw = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
-		$stuff = $dbw->select('ext_tilesheet_items', '*', array('entry_id' => $id));
-		$dbw->delete('ext_tilesheet_items', array('entry_id' => $id));
+		$stuff = $dbw->select( 'ext_tilesheet_items', '*', [ 'entry_id' => $id ] );
+		$dbw->delete( 'ext_tilesheet_items', [ 'entry_id' => $id ] );
 
-		if ($stuff->numRows() == 0) return false;
+		if ( $stuff->numRows() == 0 ) {
+			return false;
+		}
 
-		foreach ($stuff as $item) {
-			$target = empty($item->mod_name) || $item->mod_name == "undefined" ? $item->item_name : "$item->item_name ($item->mod_name)";
+		foreach ( $stuff as $item ) {
+			$target =
+				empty( $item->mod_name ) || $item->mod_name == "undefined" ? $item->item_name
+					: "$item->item_name ($item->mod_name)";
 
 			// Start log
-			$logEntry = new ManualLogEntry('tilesheet', 'deletetile');
-			$logEntry->setPerformer($user);
-			$logEntry->setTarget(Title::newFromText("Tile/$target", NS_SPECIAL));
-			$logEntry->setParameters(array("4::id" => $item->entry_id, "5::item" => $item->item_name, "6::mod" => $item->mod_name, "7::x" => $item->x, "8::y" => $item->y, "9::z" => $item->z));
-			$logEntry->setComment($comment);
+			$logEntry = new ManualLogEntry( 'tilesheet', 'deletetile' );
+			$logEntry->setPerformer( $user );
+			$logEntry->setTarget( Title::newFromText( "Tile/$target", NS_SPECIAL ) );
+			$logEntry->setParameters(
+				[
+					"4::id" => $item->entry_id,
+					"5::item" => $item->item_name,
+					"6::mod" => $item->mod_name,
+					"7::x" => $item->x,
+					"8::y" => $item->y,
+					"9::z" => $item->z,
+				]
+			);
+			$logEntry->setComment( $comment );
 			$logId = $logEntry->insert();
-			$logEntry->publish($logId);
+			$logEntry->publish( $logId );
 			// End log
 		}
+
 		return true;
 	}
 
@@ -153,60 +194,88 @@ class TileManager extends SpecialPage {
 	 * @param string $mod
 	 * @param string|int $x
 	 * @param string|int $y
-     * @param string|int $z
+	 * @param string|int $z
 	 * @param User $user
 	 * @param string $comment
 	 * @return bool
 	 */
-	public static function updateTable($id, $item, $mod, $x, $y, $z, $user, $comment = "") {
+	public static function updateTable( $id, $item, $mod, $x, $y, $z, $user, $comment = "" ) {
 		$dbw = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
-		$stuff = $dbw->select('ext_tilesheet_items', '*', array('entry_id' => $id));
-		$dbw->update('ext_tilesheet_items', array('mod_name' => $mod, 'item_name' => $item, 'x' => $x, 'y' => $y, 'z' => $z), array('entry_id' => $id));
+		$stuff = $dbw->select( 'ext_tilesheet_items', '*', [ 'entry_id' => $id ] );
+		$dbw->update(
+			'ext_tilesheet_items',
+			[ 'mod_name' => $mod, 'item_name' => $item, 'x' => $x, 'y' => $y, 'z' => $z ],
+			[ 'entry_id' => $id ]
+		);
 
-		if ($stuff->numRows() == 0) return 1;
+		if ( $stuff->numRows() == 0 ) {
+			return 1;
+		}
 
 		$fItem = $item;
-		foreach ($stuff as $item) {
-			$target = empty($item->mod_name) || $item->mod_name == "undefined" ? $item->item_name : "$item->item_name ($item->mod_name)";
+		foreach ( $stuff as $item ) {
+			$target =
+				empty( $item->mod_name ) || $item->mod_name == "undefined" ? $item->item_name
+					: "$item->item_name ($item->mod_name)";
 
-			$diff = array();
-			if ($item->item_name != $fItem) {
+			$diff = [];
+			if ( $item->item_name != $fItem ) {
 				$diff['item'][] = $item->item_name;
 				$diff['item'][] = $fItem;
 			}
-			if ($item->mod_name != $mod) {
+			if ( $item->mod_name != $mod ) {
 				$diff['mod'][] = $item->mod_name;
 				$diff['mod'][] = $mod;
 			}
-			if ($item->x != $x) {
+			if ( $item->x != $x ) {
 				$diff['x'][] = $item->x;
 				$diff['x'][] = $x;
 			}
-			if ($item->y != $y) {
+			if ( $item->y != $y ) {
 				$diff['y'][] = $item->y;
 				$diff['y'][] = $y;
 			}
-			if ($item->z != $z) {
+			if ( $item->z != $z ) {
 				$diff['z'][] = $item->z;
 				$diff['z'][] = $z;
 			}
 			$diffString = "";
-			foreach ($diff as $field => $change) {
+			foreach ( $diff as $field => $change ) {
 				$diffString .= "$field [$change[0] -> $change[1]] ";
 			}
-			if ($diffString == "" || count($diff) == 0) return 2; // No change
+			if ( $diffString == "" || count( $diff ) == 0 ) {
+				return 2;
+			} // No change
 
 			// Start log
-			$logEntry = new ManualLogEntry('tilesheet', 'edittile');
-			$logEntry->setPerformer($user);
-			$logEntry->setTarget(Title::newFromText("Tile/$target", NS_SPECIAL));
-			$logEntry->setComment($comment);
-			$logEntry->setParameters(array("6::id" => $item->entry_id, "7::item" => $item->item_name, "8::mod" => $item->mod_name, "9::x" => $item->x, "10::y" => $item->y, "15::z" => $item->z, "11::to_item" => $fItem, "12::to_mod" => $mod, "13::to_x" => $x, "14::to_y" => $y, "16::to_z" => $z, "4::diff" => $diffString, "5::diff_json" => json_encode($diff)));
+			$logEntry = new ManualLogEntry( 'tilesheet', 'edittile' );
+			$logEntry->setPerformer( $user );
+			$logEntry->setTarget( Title::newFromText( "Tile/$target", NS_SPECIAL ) );
+			$logEntry->setComment( $comment );
+			$logEntry->setParameters(
+				[
+					"6::id" => $item->entry_id,
+					"7::item" => $item->item_name,
+					"8::mod" => $item->mod_name,
+					"9::x" => $item->x,
+					"10::y" => $item->y,
+					"15::z" => $item->z,
+					"11::to_item" => $fItem,
+					"12::to_mod" => $mod,
+					"13::to_x" => $x,
+					"14::to_y" => $y,
+					"16::to_z" => $z,
+					"4::diff" => $diffString,
+					"5::diff_json" => json_encode( $diff ),
+				]
+			);
 			$logId = $logEntry->insert();
-			$logEntry->publish($logId);
+			$logEntry->publish( $logId );
+
 			// End log
 			return 0;
 		}
+
 		return 1;
 	}
 
@@ -217,49 +286,52 @@ class TileManager extends SpecialPage {
 	 */
 	private function buildSearchForm() {
 		global $wgScript;
-		$fieldset = new OOUI\FieldsetLayout([
-			'label' => $this->msg('tilesheet-tile-manager-filter-legend')->text(),
+		$fieldset = new OOUI\FieldsetLayout( [
+			'label' => $this->msg( 'tilesheet-tile-manager-filter-legend' )->text(),
 			'items' => [
 				new OOUI\FieldLayout(
-					new OOUI\TextInputWidget([
+					new OOUI\TextInputWidget( [
 						'type' => 'number',
 						'name' => 'id',
 						'value' => '',
 						'min' => '1',
 						'id' => 'form-entry-id',
-						'icon' => 'search'
-					]),
-					['label' => $this->msg('tilesheet-tile-manager-filter-id')->text()]
+						'icon' => 'search',
+					] ),
+					[ 'label' => $this->msg( 'tilesheet-tile-manager-filter-id' )->text() ]
 				),
-				new OOUI\ButtonInputWidget([
-					'label' => $this->msg('tilesheet-tile-manager-filter-submit')->text(),
-					'type' => 'submit'
-				])
-			]
-		]);
-		$form = new OOUI\FormLayout([
+				new OOUI\ButtonInputWidget( [
+					'label' => $this->msg( 'tilesheet-tile-manager-filter-submit' )->text(),
+					'type' => 'submit',
+				] ),
+			],
+		] );
+		$form = new OOUI\FormLayout( [
 			'method' => 'GET',
 			'action' => $wgScript,
-			'id' => 'ext-tilesheet-tile-manager-filter'
-		]);
+			'id' => 'ext-tilesheet-tile-manager-filter',
+		] );
 		$form->appendContent(
 			$fieldset,
-			new OOUI\HtmlSnippet(Html::hidden('title', $this->getPageTitle()->getPrefixedText()))
+			new OOUI\HtmlSnippet(
+				Html::hidden( 'title', $this->getPageTitle()->getPrefixedText() )
+			)
 		);
-		return new OOUI\PanelLayout([
-			'classes' => ['tile-manager-filter-wrapper'],
+
+		return new OOUI\PanelLayout( [
+			'classes' => [ 'tile-manager-filter-wrapper' ],
 			'framed' => true,
 			'expanded' => false,
 			'padded' => true,
-			'content' => $form
-		]);
+			'content' => $form,
+		] );
 	}
 
-	private function displayUpdateForm($id) {
+	private function displayUpdateForm( $id ) {
 		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_REPLICA );
-		$result = $dbr->select('ext_tilesheet_items', '*', array('entry_id' => $id));
-		if ($result->numRows() == 0) {
-			return $this->msg('tilesheet-fail-norows')->text();
+		$result = $dbr->select( 'ext_tilesheet_items', '*', [ 'entry_id' => $id ] );
+		if ( $result->numRows() == 0 ) {
+			return $this->msg( 'tilesheet-fail-norows' )->text();
 		} else {
 			$item = $result->current()->item_name;
 			$mod = $result->current()->mod_name;
@@ -269,59 +341,59 @@ class TileManager extends SpecialPage {
 		}
 
 		$formDescriptor = [
-		    'id' => [
-		        'type' => 'int',
-                'name' => 'id',
-                'default' => $id,
-                'readonly' => true,
-                'label-message' => 'tilesheet-tile-manager-id'
-            ],
-            'item' => [
-                'type' => 'text',
-                'name' => 'item',
-                'default' => htmlspecialchars($item),
-                'label-message' => 'tilesheet-tile-manager-item'
-            ],
-            'mod' => [
-                'type' => 'text',
-                'name' => 'mod',
-                'default' => $mod,
-                'label-message' => 'tilesheet-tile-manager-mod'
-            ],
-            'x' => [
-                'type' => 'int',
-                'name' => 'x',
-                'default' => $x,
-                'label-message' => 'tilesheet-tile-manager-x'
-            ],
-            'y' => [
-                'type' => 'int',
-                'name' => 'y',
-                'default' => $y,
-                'label-message' => 'tilesheet-tile-manager-y'
-            ],
-            'z' => [
-                'type' => 'int',
-                'name' => 'z',
-                'default' => $z,
-                'label-message' => 'tilesheet-tile-manager-z'
-            ]
-        ];
+			'id' => [
+				'type' => 'int',
+				'name' => 'id',
+				'default' => $id,
+				'readonly' => true,
+				'label-message' => 'tilesheet-tile-manager-id',
+			],
+			'item' => [
+				'type' => 'text',
+				'name' => 'item',
+				'default' => htmlspecialchars( $item ),
+				'label-message' => 'tilesheet-tile-manager-item',
+			],
+			'mod' => [
+				'type' => 'text',
+				'name' => 'mod',
+				'default' => $mod,
+				'label-message' => 'tilesheet-tile-manager-mod',
+			],
+			'x' => [
+				'type' => 'int',
+				'name' => 'x',
+				'default' => $x,
+				'label-message' => 'tilesheet-tile-manager-x',
+			],
+			'y' => [
+				'type' => 'int',
+				'name' => 'y',
+				'default' => $y,
+				'label-message' => 'tilesheet-tile-manager-y',
+			],
+			'z' => [
+				'type' => 'int',
+				'name' => 'z',
+				'default' => $z,
+				'label-message' => 'tilesheet-tile-manager-z',
+			],
+		];
 
-        $htmlForm = HTMLForm::factory('ooui', $formDescriptor, $this->getContext());
-        $htmlForm
-            ->addButton([
-                'name' => 'delete',
-                'value' => 1,
-                'label-message' => 'tilesheet-tile-manager-delete',
-                'flags' => ['destructive']
-            ])
-            ->setMethod('get')
-            ->addHiddenField('update', 1)
-            ->setWrapperLegendMsg('tilesheet-tile-manager-legend')
-            ->setId('ext-tilesheet-tile-manager-form')
-            ->setSubmitTextMsg('tilesheet-tile-manager-submit')
-            ->prepareForm()
-            ->displayForm(false);
+		$htmlForm = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext() );
+		$htmlForm
+			->addButton( [
+				'name' => 'delete',
+				'value' => 1,
+				'label-message' => 'tilesheet-tile-manager-delete',
+				'flags' => [ 'destructive' ],
+			] )
+			->setMethod( 'get' )
+			->addHiddenField( 'update', 1 )
+			->setWrapperLegendMsg( 'tilesheet-tile-manager-legend' )
+			->setId( 'ext-tilesheet-tile-manager-form' )
+			->setSubmitTextMsg( 'tilesheet-tile-manager-submit' )
+			->prepareForm()
+			->displayForm( false );
 	}
 }
