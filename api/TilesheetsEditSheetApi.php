@@ -8,8 +8,8 @@ class TilesheetsEditSheetApi extends ApiBase {
 	public function __construct(
 		$query,
 		$moduleName,
-		private ILoadBalancer $loadBalancer,
-		private PermissionManager $permissionManager
+		private PermissionManager $permissionManager,
+		private ILoadBalancer $loadBalancer
 	) {
 		parent::__construct( $query, $moduleName, 'ts' );
 	}
