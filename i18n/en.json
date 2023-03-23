@@ -189,6 +189,7 @@
 	"tilesheets-warning-nosize": "No $1px tilesheet for $2 is defined! Selecting smallest size!",
 	"tilesheets-warning-noimage": "Tilesheet $1 $2 $3.png does not exist!",
 	"tilesheets-log-output": "Outputting item: $1px $2 ($3)",
+	"tilesheets-error-no-item-param": "Cannot parse into tile, provide item param!",
 	"tilesheets-error-missingitem": "Entry missing for $1!",
 	"tilesheets-error-missingitemmod": "Entry missing for $1 ($2)!",
 	"tilesheets-warning-nomodparam": "Mod parameter is not defined for $1 but is able to decide which entry to use! Selecting entry from $2!",
