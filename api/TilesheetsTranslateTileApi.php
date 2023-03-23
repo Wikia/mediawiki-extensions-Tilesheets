@@ -2,14 +2,15 @@
 
 use MediaWiki\Permissions\PermissionManager;
 use Wikimedia\ParamValidator\ParamValidator;
+use Wikimedia\ParamValidator\TypeDef\IntegerDef;
 use Wikimedia\Rdbms\ILoadBalancer;
 
 class TilesheetsTranslateTileApi extends ApiBase {
 	public function __construct(
 		$query,
 		$moduleName,
-		private ILoadBalancer $loadBalancer,
-		private PermissionManager $permissionManager
+		private PermissionManager $permissionManager,
+		private ILoadBalancer $loadBalancer
 	) {
 		parent::__construct( $query, $moduleName, 'ts' );
 	}

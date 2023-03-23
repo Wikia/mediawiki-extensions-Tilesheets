@@ -1,6 +1,5 @@
 <?php
 
-use MediaWiki\MediaWikiServices;
 use MediaWiki\Permissions\PermissionManager;
 use Wikimedia\ParamValidator\ParamValidator;
 use Wikimedia\Rdbms\ILoadBalancer;
@@ -9,8 +8,8 @@ class TilesheetsEditTileApi extends ApiBase {
 	public function __construct(
 		$query,
 		$moduleName,
-		private ILoadBalancer $loadBalancer,
-		private PermissionManager $permissionManager
+		private PermissionManager $permissionManager,
+		private ILoadBalancer $loadBalancer
 	) {
 		parent::__construct( $query, $moduleName, 'ts' );
 	}
