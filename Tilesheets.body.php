@@ -15,31 +15,25 @@ class Tilesheets {
 	static private $mQueriedItems;
 	static private $mQueriedSizes;
 	static $tileLinks;
-	private $mOptions;
+	private array $mOptions;
 
 	/**
 	 * Prepare the tile for outputting, retrieve stuff from database if not already retrieved
 	 *
-	 * @param $options
+	 * @param array $options
 	 */
-	public function __construct( $options, Parser &$parser ) {
+	public function __construct( array $options, Parser &$parser ) {
 		$this->mOptions = $options;
 
-		// Set default values
-		$item = $options['item'];
-		$size = 32;
-		$mod = "undefined";
-
-		// Retrieve parser function parameters
+		// If item not set prevent execution
 		if ( !isset( $options['item'] ) ) {
 			return;
 		}
-		if ( isset( $options['size'] ) ) {
-			$size = $options['size'];
-		}
-		if ( isset( $options['mod'] ) ) {
-			$mod = $options['mod'];
-		}
+
+		// Set values from parser
+		$item = $options['item'];
+		$size = $options['size'] ?? 32;
+		$mod = $options['mod'] ?? 'undefined';
 
 		TilesheetsError::log(
 			wfMessage( 'tilesheets-log-prepare' )->params( $size, $item, $mod )->text()
@@ -67,21 +61,16 @@ class Tilesheets {
 	 * @return array|string
 	 */
 	public function output( Parser &$parser ) {
-		// Set default values
-		$item = $this->mOptions['item'];
-		$size = 32;
-		$mod = "undefined";
-
-		// Retrieve parser function parameters
+		// If item not set prevent execution
 		if ( !isset( $this->mOptions['item'] ) ) {
-			return "";
+			TilesheetsError::error( wfMessage( 'tilesheets-error-no-item-param' )->text() );
+			return '';
 		}
-		if ( isset( $this->mOptions['size'] ) ) {
-			$size = $this->mOptions['size'];
-		}
-		if ( isset( $this->mOptions['mod'] ) ) {
-			$mod = $this->mOptions['mod'];
-		}
+
+		// Set values from parser
+		$item = $this->mOptions['item'];
+		$size = $this->mOptions['size'] ?? 32;
+		$mod = $this->mOptions['mod'] ?? 'undefined';
 
 		TilesheetsError::log(
 			wfMessage( 'tilesheets-log-output' )->params( $size, $item, $mod )->text()

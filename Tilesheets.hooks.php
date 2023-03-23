@@ -1,4 +1,7 @@
 <?php
+
+use MediaWiki\MediaWikiServices;
+
 /**
  * Tilesheets hooks file
  * Entrance points to the tilesheets extension
@@ -150,7 +153,7 @@ class TilesheetsHooks {
 		$type = 'name',
 		$language = 'en'
 	) {
-		$dbr = wfGetDB( DB_REPLICA );
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_REPLICA );
 		$items =
 			$dbr->select(
 				'ext_tilesheet_items',
@@ -191,7 +194,8 @@ class TilesheetsHooks {
 	 * @param $opts
 	 * @return array
 	 */
-	public static function ExtractOptions( $opts ) {
+	public static function ExtractOptions( $opts ): array {
+		$results = [];
 		foreach ( $opts as $option ) {
 			$pair = explode( '=', $option );
 			if ( count( $pair ) == 2 ) {
@@ -201,10 +205,6 @@ class TilesheetsHooks {
 					$results[$name] = $value;
 				}
 			}
-		}
-
-		if ( !isset( $results ) ) {
-			$results = [];
 		}
 
 		return $results;
@@ -275,7 +275,7 @@ class TilesheetsHooks {
 	public static function onArticleMove( Title &$oldTitle, Title &$newTitle ) {
 		// It's worth noting that the ID doesn't change when pages are moved, according to Manual:Page table
 		// However, you can move pages across namespaces, so we still need to update the table.
-		$dbw = wfGetDB( DB_MASTER );
+		$dbw = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 		$dbw->update(
 			'ext_tilesheet_tilelinks',
 			[
@@ -313,7 +313,7 @@ class TilesheetsHooks {
 	}
 
 	public static function clearTileLinksForPage( $pageID, $namespaceID ) {
-		$dbw = wfGetDB( DB_MASTER );
+		$dbw = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 		$dbw->delete( 'ext_tilesheet_tilelinks', [
 			'`tl_from`' => $pageID,
 			'`tl_from_namespace`' => $namespaceID,
@@ -321,7 +321,7 @@ class TilesheetsHooks {
 	}
 
 	public static function addToTileLinks( $pageID, $namespaceID, $tileID ) {
-		$dbw = wfgetDB( DB_MASTER );
+		$dbw = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 
 		$result = $dbw->select( 'ext_tilesheet_tilelinks', 'COUNT(`tl_to`) AS count', [
 			'`tl_from`' => $pageID,
