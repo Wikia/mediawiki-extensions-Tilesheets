@@ -18,7 +18,7 @@ use MediaWiki\Hook\ParserFirstCallInitHook;
  * @license
  */
 
-class TilesheetsHooks implements ParserFirstCallInitHook, BeforePageDisplayHook, EditPage__showEditForm_initialHook, OreDictOutputHook {
+class TilesheetsHooks implements ParserFirstCallInitHook, BeforePageDisplayHook, EditPage__showEditForm_initialHook /*, OreDictOutputHook */ {
 	static private $mOreDictMainErrorOutputted = false;
 
 	/**
@@ -74,7 +74,10 @@ class TilesheetsHooks implements ParserFirstCallInitHook, BeforePageDisplayHook,
 	 * @param string $language The language code. Falls back to 'en'.
 	 * @return string The localized content, or the provided item's name as fall back.
 	 */
-	public static function IconLocalization(Parser $parser, $item, $mod, $type = 'name', $language = 'en') {
+	public static function IconLocalization(Parser $parser, $item = '', $mod = '', $type = 'name', $language = 'en') {
+		if ( $item === '' || $mod === '' ) {
+			return '';
+		}
 		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection(DB_REPLICA);
 		$resultItem = $dbr->newSelectQueryBuilder()
 			->select('entry_id')
